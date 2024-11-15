@@ -183,5 +183,64 @@ router.put('/update-users-by-id/:id', async (req, res) => {
         console.log(error);
     }
 })
+
+router.delete("/delete-fruit-by-id/:id", async (req, res) =>{
+    try{
+        const {id} = req.params;//Dữ liệu đầu vào: ID của hoa quả được trích xuất từ req.params.
+        const result = await Fruits.findByIdAndDelete(id);// tìm theo id và thực hiện xóa.
+        if(result){
+            res.json({
+                status: 200,
+                messenger: "Xóa thành công",
+                data: result,
+            });
+        }else{
+            res.json({
+                status: 400,
+                messenger: "Lỗi. Xóa không thành công",
+                data: [],
+            });
+        }
+    }catch(err) {
+        console.log(err);
+    }
+})
+
+const Upload = require('../config/common/upload');
+router.post('/add-fruit-with-file-image', Upload.array('image', 5), async(req, res) =>{
+    try {
+        const data = req.body;
+        const { files } = req;
+        const urlsImage = files.map((file) => `${req.protocol}://${req.get("host")}/uploads/${file.filename}`);
+
+        const newFruit = new Fruits({
+            name: data.name,
+            quantity: data.quantity,
+            price: data.price,
+            status: data.status,
+            image: urlsImage,
+            description: data.description,
+            id_distributor: data.id_distributor
+        });
+
+        const result = await newFruit.save();
+
+        if (result) {
+            res.json({
+                status: 200,
+                messenger: "Thêm thành công",  
+                data: result
+            });
+        } else {
+            res.json({
+                status: 400,
+                messenger: "Lỗi, thêm không thành công",
+                data: []
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
+});
 module.exports = router;
 
